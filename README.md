@@ -8,22 +8,26 @@ voice back up. bdh-aec runs WebRTC AEC3 on the camera mic (from go2rtc's
 cleaned audio as Opus-in-MPEG-TS at `/aec.ts?cam=<cam>`. The cameras app
 registers `<cam>_aec` in go2rtc as camera video + that audio.
 
-| Port | Use |
-|---|---|
-| 11911 | HTTP: `/aec.ts`, `/aec.wav`, and `/api/talk` WebSocket upgrades |
-| 11910 | Talk WebSocket proxy to go2rtc `/api/talk` (tees frames as the AEC reference) |
+## How it's deployed
 
-Turn it on in the cameras app settings under **Echo cancellation (beta)** with
-`http://<hub-ip>:11911`.
+It's a **platform companion**, like go2rtc: the cameras app declares
+`companions=("go2rtc", "aec")` and `bdh-supervisor` runs this image next to it
+(host network, read-only, uid 10001) and hands the app its address as
+`BDH_AEC_URL`. Nothing to install by hand: installing or updating the cameras
+app brings it along.
 
-## Deploy
+CI publishes `ghcr.io/blackdiamondlodge/bdh-aec:latest` (and `:sha-<sha>`) on
+every push to `main`.
 
-CI publishes `ghcr.io/blackdiamondlodge/bdh-aec:latest` on every push to `main`;
-Watchtower picks it up on the hub.
+| Env | Default | |
+|---|---|---|
+| `GO2RTC` | `http://127.0.0.1:11900` | go2rtc API |
+| `HTTP_PORT` | `11911` | `/aec.ts`, `/aec.wav`, and `/api/talk` WebSocket upgrades (the only port browsers use) |
+| `TALK_PORT` | `11910` | Internal talk WebSocket proxy to go2rtc `/api/talk`, loopback only |
+| `AEC_NS` | `1` | Noise suppression on/off |
+
+For testing outside the supervisor:
 
 ```sh
-docker run -d --name bdh-aec --network host --restart unless-stopped \
-  -e GO2RTC=http://127.0.0.1:11900 ghcr.io/blackdiamondlodge/bdh-aec:latest
+docker run --rm --network host -e GO2RTC=http://127.0.0.1:11900 ghcr.io/blackdiamondlodge/bdh-aec:latest
 ```
-
-Env: `GO2RTC` (go2rtc API URL), `TALK_PORT`, `HTTP_PORT`, `AEC_NS` (noise suppression, 1/0).
