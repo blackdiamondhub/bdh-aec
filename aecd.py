@@ -1,7 +1,10 @@
 """bdh-aec: server-side echo cancellation for doorbell talkback.
 
-  kiosk --ws--> :TALK_PORT/api/talk?src=<cam>_talk --ws--> go2rtc /api/talk  (frames tee'd as AEC reference)
-  go2rtc ffmpeg:http://<this>:HTTP_PORT/aec.wav?cam=<cam>#audio=opus  <--  AEC3(mic=<cam>_low audio, ref)
+  kiosk --ws--> :HTTP_PORT/api/talk?src=<cam>_talk --> 127.0.0.1:TALK_PORT --ws--> go2rtc /api/talk
+                (frames tee'd as the AEC reference)
+  go2rtc http://<this>:HTTP_PORT/aec.ts?cam=<cam>  <--  AEC3(mic=<cam>_low audio, ref)
+
+Normally run by the BDH supervisor as the cameras app's ``aec`` companion.
 """
 import asyncio, ctypes, json, logging, math, os, struct, time, urllib.parse, urllib.request
 from array import array
@@ -225,7 +228,7 @@ async def http_handler(reader, writer):
 async def main():
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
     await asyncio.start_server(http_handler, "0.0.0.0", HTTP_PORT)
-    async with ws_serve(talk_handler, "0.0.0.0", TALK_PORT, max_size=None, compression=None):
+    async with ws_serve(talk_handler, "127.0.0.1", TALK_PORT, max_size=None, compression=None):
         log.info("listening talk=%d http=%d go2rtc=%s ns=%d", TALK_PORT, HTTP_PORT, GO2RTC, NS)
         await asyncio.Future()
 
