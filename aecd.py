@@ -1,6 +1,6 @@
 """bdh-aec: server-side echo cancellation for doorbell talkback.
 
-  kiosk --ws--> :HTTP_PORT/api/talk?src=<cam>_talk --> 127.0.0.1:TALK_PORT --ws--> go2rtc /api/talk
+  cameras app --ws--> :HTTP_PORT/api/talk?src=<cam>_talk --> 127.0.0.1:TALK_PORT --ws--> go2rtc /api/talk
                 (frames tee'd as the AEC reference)
   go2rtc http://<this>:HTTP_PORT/aec.ts?cam=<cam>  <--  AEC3(mic=<cam>_low audio, ref)
 
@@ -16,6 +16,8 @@ from websockets.asyncio.server import serve as ws_serve
 GO2RTC = os.environ.get("GO2RTC", "http://127.0.0.1:11900")
 TALK_PORT = int(os.environ.get("TALK_PORT", "11910"))
 HTTP_PORT = int(os.environ.get("HTTP_PORT", "11911"))
+# The supervisor sets 127.0.0.1: only go2rtc and the cameras app (same host) use it.
+HTTP_HOST = os.environ.get("HTTP_HOST", "0.0.0.0")
 NS = int(os.environ.get("AEC_NS", "1"))
 REF_MAX = 16000 * 2  # cap per-consumer reference FIFO at 1 s (bytes)
 FRAME = 320  # 10 ms @ 16 kHz s16le
@@ -227,7 +229,7 @@ async def http_handler(reader, writer):
 
 async def main():
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
-    await asyncio.start_server(http_handler, "0.0.0.0", HTTP_PORT)
+    await asyncio.start_server(http_handler, HTTP_HOST, HTTP_PORT)
     async with ws_serve(talk_handler, "127.0.0.1", TALK_PORT, max_size=None, compression=None):
         log.info("listening talk=%d http=%d go2rtc=%s ns=%d", TALK_PORT, HTTP_PORT, GO2RTC, NS)
         await asyncio.Future()

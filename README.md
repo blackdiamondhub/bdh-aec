@@ -22,7 +22,8 @@ every push to `main`.
 | Env | Default | |
 |---|---|---|
 | `GO2RTC` | `http://127.0.0.1:11900` | go2rtc API |
-| `HTTP_PORT` | `11911` | `/aec.ts`, `/aec.wav`, and `/api/talk` WebSocket upgrades (the only port browsers use) |
+| `HTTP_HOST` | `0.0.0.0` | Address the HTTP port binds to. The supervisor sets `127.0.0.1`: go2rtc and the cameras app (which checks who may talk and relays the kiosk's talk websocket) are on the same host, and nothing else should reach it |
+| `HTTP_PORT` | `11911` | `/aec.ts`, `/aec.wav`, and `/api/talk` WebSocket upgrades |
 | `TALK_PORT` | `11910` | Internal talk WebSocket proxy to go2rtc `/api/talk`, loopback only |
 | `AEC_NS` | `1` | Noise suppression on/off |
 
