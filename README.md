@@ -16,7 +16,7 @@ It's a **platform companion**, like go2rtc: the cameras app declares
 `BDH_AEC_URL`. Nothing to install by hand: installing or updating the cameras
 app brings it along.
 
-CI publishes `ghcr.io/blackdiamondlodge/bdh-aec:latest` (and `:sha-<sha>`) on
+CI publishes `ghcr.io/blackdiamondhub/bdh-aec:latest` (and `:sha-<sha>`) on
 every push to `main`.
 
 | Env | Default | |
@@ -30,5 +30,5 @@ every push to `main`.
 For testing outside the supervisor:
 
 ```sh
-docker run --rm --network host -e GO2RTC=http://127.0.0.1:11900 ghcr.io/blackdiamondlodge/bdh-aec:latest
+docker run --rm --network host -e GO2RTC=http://127.0.0.1:11900 ghcr.io/blackdiamondhub/bdh-aec:latest
 ```

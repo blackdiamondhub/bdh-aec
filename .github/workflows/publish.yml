@@ -36,12 +36,12 @@ jobs:
           context: .
           push: ${{ github.event_name != 'pull_request' }}
           tags: |
-            ghcr.io/blackdiamondlodge/bdh-aec:latest
-            ghcr.io/blackdiamondlodge/bdh-aec:sha-${{ github.sha }}
+            ghcr.io/blackdiamondhub/bdh-aec:latest
+            ghcr.io/blackdiamondhub/bdh-aec:sha-${{ github.sha }}
           labels: org.opencontainers.image.source=https://github.com/${{ github.repository }}
       - uses: actions/attest-build-provenance@v2
         if: github.event_name != 'pull_request'
         with:
-          subject-name: ghcr.io/blackdiamondlodge/bdh-aec
+          subject-name: ghcr.io/blackdiamondhub/bdh-aec
           subject-digest: ${{ steps.build.outputs.digest }}
           push-to-registry: true
